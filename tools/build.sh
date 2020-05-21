@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-DEFAULT_ARGS="-DDSLINK_BUILD_EXAMPLES=ON -DDSLINK_BUILD_BROKER=OFF -DCMAKE_BUILD_TYPE=Release"
+DEFAULT_ARGS="-DDSLINK_BUILD_EXAMPLES=ON -DDSLINK_BUILD_BROKER=ON -DCMAKE_BUILD_TYPE=Release"
 
 if [[ -z "${DSA_CMAKE_ARGS}" ]]
 then
@@ -29,10 +29,10 @@ fi
 cd build
 
 cmake ${DSA_CMAKE_ARGS} ..
-
+#cmake -DCMAKE_C_COMPILER=/usr/bin/aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=/usr/bin/aarch64-linux-gnu-g++ ${DSA_CMAKE_ARGS} ..
 if [ -f Makefile ]
 then
-  make "${@}"
+  make -j8 "${@}"
 else
   ninja "${@}"
 fi

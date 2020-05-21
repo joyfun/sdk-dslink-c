@@ -449,7 +449,8 @@ int broker_start_server(json_t *config) {
     if (httpEnabled && httpHost && httpPort[0] != '\0') {
         mbedtls_net_init(&httpServer.srv);
         httpServer.data_ready = broker_on_data_callback;
-
+        //use block io
+        //mbedtls_net_set_block(&httpServer.srv);
         httpActive = start_http_server(&httpServer, httpHost, httpPort,
                                        mainLoop, &httpPoll);
     }

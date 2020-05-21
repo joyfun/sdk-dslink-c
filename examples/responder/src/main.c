@@ -57,10 +57,10 @@ void disconnected(DSLink *link) {
 // The main function.
 int main(int argc, char **argv) {
     DSLinkCallbacks cbs = { // Create our callback struct.
-        init, // init_cb
-        connected, //on_connected_cb
-        disconnected, // on_disconnected_cb
-        NULL // on_requester_ready_cb
+        init, // init_cb                                    初始化回调
+        connected, //on_connected_cb                        上线回调
+        disconnected, // on_disconnected_cb                 断线回调
+        NULL // on_requester_ready_cb                       请求回调
     };
 
     // Initializes a DSLink and handles reconnection.

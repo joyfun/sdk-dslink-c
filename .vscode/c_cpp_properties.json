@@ -1,0 +1,27 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/broker/include/**",
+                "${workspaceFolder}/deps/wslay/lib",
+                "${workspaceFolder}/deps/wslay/lib/includes",
+                "${workspaceFolder}/sdk/include",
+                "${workspaceFolder}/deps/jansson/src",
+                "${workspaceFolder}/build/include",
+                "${workspaceFolder}/deps/libuv/include",
+                "${workspaceFolder}/deps/mbedtls/include"
+            ],
+            "defines": [],
+            "macFrameworkPath": [
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
+            ],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64",
+            "configurationProvider": "vector-of-bool.cmake-tools"
+        }
+    ],
+    "version": 4
+}

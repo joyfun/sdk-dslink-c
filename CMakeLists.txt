@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
 project(sdk_dslink_c C)
 
 option(USE_CCACHE "Enable CCache Support" ON)
-option(DSLINK_BUILD_BROKER "Whether to build the broker" OFF)
+option(DSLINK_BUILD_BROKER "Whether to build the broker" ON)
 option(DSLINK_BUILD_STATIC "Whether to build the static library" ON)
-option(DSLINK_BUILD_EXAMPLES "Whether to build the examples" OFF)
+option(DSLINK_BUILD_EXAMPLES "Whether to build the examples" ON)
 option(DSLINK_TEST "Whether to enable tests" OFF)
 option(DSLINK_PACKAGE_INCLUDES "Whether to add the includes to the resulting package" ON)
 option(TOOLCHAIN_DYNAMIC_LINK_ENABLE "Enable Dynamic Linking for Toolchain" ON)
@@ -95,17 +95,18 @@ include(ExternalProject)
 
 ##### Configure Flags #####
 
-ADD_C_FLAGS("-std=gnu99")
+ADD_C_FLAGS("-std=gnu99 -g")
 ADD_C_FLAGS("-Wno-tautological-compare")
 
 if (NOT NO_WARNINGS)
-    ADD_C_FLAGS("-Wall -Wextra -Werror")
-    ADD_C_FLAGS("-Wno-overlength-strings")
-    ADD_C_FLAGS("-Wno-implicit-fallthrough")
-    ADD_C_FLAGS("-Wno-clobbered")
-    ADD_C_FLAGS("-Wno-misleading-indentation")
-    ADD_C_FLAGS("-Wno-format-truncation")
-    ADD_C_FLAGS("-pedantic")
+#    ADD_C_FLAGS("-Wall -Wextra -Werror")
+#    ADD_C_FLAGS("-Wno-overlength-strings")
+#    ADD_C_FLAGS("-Wno-implicit-fallthrough")
+#    ADD_C_FLAGS("-Wno-clobbered")
+#    ADD_C_FLAGS("-Wno-misleading-indentation")
+#    ADD_C_FLAGS("-Wno-format-truncation")
+#    ADD_C_FLAGS("-pedantic")
+    ADD_C_FLAGS("-Wno-unused-command-line-argument")
 endif()
 
 if (${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
@@ -189,6 +190,7 @@ set(BROKER_SRC
     "${BROKER_SRC_DIR}/net/ws_handler.c"
 
     "${BROKER_SRC_DIR}/broker.c"
+    "${BROKER_SRC_DIR}/mimetype.c"
     "${BROKER_SRC_DIR}/config.c"
     "${BROKER_SRC_DIR}/handshake.c"
     "${BROKER_SRC_DIR}/node/node.c"
@@ -300,7 +302,7 @@ endif()
 # package definition
 SET(CPACK_CMAKE_GENERATOR "Unix Makefiles")
 SET(CPACK_PACKAGE_CONTACT "https://mycase.cloudapps.cisco.com/case")
-SET(CPACK_PACKAGE_URL "http://www.cisco.com")
+SET(CPACK_PACKAGE_URL "http://www.chinwell.com")
 SET(CPACK_PACKAGE_LICENSE "Apache License, Version 2.0")
 SET(CPACK_PACKAGE_RELOCATABLE "false")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "C DSLink SDK")

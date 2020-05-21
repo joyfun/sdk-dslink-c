@@ -2,7 +2,15 @@
 #include <dlfcn.h>
 #include <libgen.h>
 #include <string.h>
+//#define WINDOWS  /* uncomment this line to use it for windows.*/
+#ifdef WINDOWS
+#include <direct.h>
+#define GetCurrentDir _getcwd
+#else
 #include <unistd.h>
+#define GetCurrentDir getcwd
+#endif
+//#include <unistd.h>
 
 #include <wslay_event.h>
 
@@ -29,6 +37,7 @@
                     "Content-Length: %d\r\n" \
                     "\r\n%s\r\n"
 
+
 #ifndef IOT_DSA_C_SDK_GIT_COMMIT_HASH
 #define IOT_DSA_C_SDK_GIT_COMMIT_HASH "unknown"
 #endif
@@ -41,6 +50,116 @@ struct Extension
     struct ExtensionCallbacks callbacks;
 };
 
+static
+void handle_admin(Broker *broker, HttpRequest *req, Socket *sock) {
+
+    char current_dir[FILENAME_MAX];
+    GetCurrentDir(current_dir, FILENAME_MAX);
+    printf("Current working dir: %s\n", current_dir);
+
+    // process configuration
+    log_info("admin configuration...\n");
+    char path[512];
+    if(is_start_with(req->uri.resource, "/static") == 0){
+         strcpy(path, "/admin");   
+         strcat(path,req->uri.resource);
+
+    }else{
+         strcpy(path, req->uri.resource);   
+    }
+        if (path[strlen(path) - 1] == '/'){
+            strcat(path,"index.html");
+        }
+        if (path[strlen(path) - 1] == '/'){
+            strcat(path,"index.html");
+        }
+
+    FILE  *ptrFile = fopen(strcat(current_dir,path), "r");
+            log_info("admin usr path %s \n",current_dir);
+    if(ptrFile==NULL){
+        broker_send_not_found_error(sock);
+        return;
+        }
+
+    long lSize;
+   // char *buffer;
+
+    // fprintf( ptrFile, "<HTML>\n");
+    // fprintf( ptrFile, "<HEAD> <TITLE> The Geek Stuff </TITLE> </HEAD>\n" ); 
+    // fprintf( ptrFile, "<BODY BGCOLOR=\"#110022\" TEXT=\"#FFBBAA\"> \n"); 
+    // fprintf( ptrFile, "<p>Example 1: This file was created from edge broker service</p>\n");
+
+    // fprintf( ptrFile, "</BODY>\n"); 
+    // fprintf( ptrFile, "</HTML>"); 
+
+    fseek(ptrFile, 0L, SEEK_END);
+    lSize = ftell(ptrFile);
+
+    rewind(ptrFile);
+    //fclose(ptrFile);
+
+    // buffer = dslink_calloc(1, (int)(lSize + 1));
+    // buffer[lSize+1] = '\0';
+    // int count = fread(buffer, sizeof(char), (int)lSize, ptrFile);
+    // log_info("admin usr path %s size: %d\n",current_dir,count);
+
+    // if (count < 0) {
+    //     broker_send_internal_error(sock);
+    //     goto exit;
+    // }
+    
+    char buf[1024];
+
+    char* HTML_RESP="HTTP/1.1 200 OK\r\n" \
+                    "Connection: Keep-Alive\r\n" \
+                    "Access-Control-Allow-Origin: *\r\n" \
+                    "Content-Type:%s; charset=utf-8\r\n" \
+                    "Content-Length: %d\r\n\r\n";
+    const char* mime;
+    mime=mime_get_type(path);
+    printf("response : %s\n",mime);
+
+    int len = snprintf(buf, sizeof(buf) - 1,
+                       HTML_RESP,mime_get_type(path), lSize);
+    log_info("read resp length : %d  \n",(int)lSize);
+
+    buf[len] = '\0';
+    dslink_socket_write(sock, buf, (size_t) len);  
+    char tbuf[1024];
+    //fgets(tbuf, sizeof(tbuf), ptrFile);
+    int i=0;
+    int bytesRead=0;
+
+     while ((bytesRead = fread(tbuf, 1, sizeof(tbuf), ptrFile)) > 0)
+  {
+              dslink_socket_write(sock, tbuf, bytesRead);  
+                  //    log_info("temp read : %d\n",bytesRead);
+
+              i+=bytesRead;
+    // process bytesRead worth of data in buffer
+  }
+
+    // while (!feof(ptrFile))
+    // {
+    //     fgets(tbuf, sizeof(tbuf), ptrFile);
+    //     dslink_socket_write(sock, tbuf, strlen(tbuf));  
+    //     i+=strlen(tbuf);
+    //    // send(client, tbuf, strlen(tbuf), 0);
+
+    // }
+        log_info("total read : %d\n",i);
+
+  //  dslink_socket_write(sock, buffer, (size_t) (lSize+1));  
+   // dslink_free(buffer);
+    return;
+
+exit:
+    if (ptrFile) {
+        fclose( ptrFile );
+    }
+    return;
+
+}
 
 static
 void handle_conn(Broker *broker, HttpRequest *req, Socket *sock) {
@@ -191,12 +310,77 @@ void broker_https_on_data_callback(Client *client, void *data) {
 
         handle_ws(broker, &req, client);
         return;
+    } else if (strcmp(req.uri.resource, "/admin") == 0) {
+//        if (strcmp(req.mehtod, "POST") != 0) {
+//            log_info("invalid method on /admin \n");
+//            broker_send_bad_request(client->sock);
+//            goto exit;
+//        }
+
+        handle_admin(broker, &req, client->sock);
+        log_info("deal admin path end \n");
+
     } else {
         broker_send_not_found_error(client->sock);
     }
 
     exit:
     dslink_socket_close_nofree(client->sock);
+}
+/**
+ *判断是字符串str是不是以start开始
+ */
+int is_start_with(const char *str, char *start)
+{
+	if (NULL == str || NULL == start)
+	{
+		return -1;
+	}
+	int str_len = strlen(str);
+	int start_len = strlen(start);
+	if (str_len < start_len || str_len == 0 || start_len == 0)
+	{
+		return -1;
+	}
+	char *p = start;
+	int i = 0;
+	while(*p != '\0')
+	{
+		if (str[i] != *p)
+		{
+			return -1;
+		}
+		++p;
+		++i;
+	}
+	return 0;
+}
+ 
+/**
+ *判断是字符串str是不是以end结束
+ */
+int is_end_with(const char *str, char *end)
+{
+	if (NULL == str || NULL == end)
+	{
+		return -1;
+	}
+	int str_len = strlen(str);
+	int end_len = strlen(end);
+	if (str_len < end_len || str_len == 0 || end_len == 0)
+	{
+		return -1;
+	}	
+	while (end_len > 0)
+	{
+		if (str[str_len - 1] != end[end_len - 1])
+		{
+			return -1;
+		}
+		--str_len;
+		--end_len;
+	}
+	return 0;
 }
 
 void broker_on_data_callback(Client *client, void *data) {
@@ -250,6 +434,15 @@ void broker_on_data_callback(Client *client, void *data) {
 
         handle_ws(broker, &req, client);
         return;
+    } else if (is_start_with(req.uri.resource, "/admin") == 0||is_start_with(req.uri.resource, "/static") == 0) {
+//        if (strcmp(req.mehtod, "POST") != 0) {
+//            log_info("invalid method on /admin \n");
+//            broker_send_bad_request(client->sock);
+//            goto exit;
+//        }
+       // mbedtls_net_set_nonblock(ctx);
+
+        handle_admin(broker, &req, client->sock);
     } else {
         broker_send_not_found_error(client->sock);
     }
@@ -597,8 +790,8 @@ int broker_start() {
     // onyl allow an uv threadpool of max one thread
     putenv("UV_THREADPOOL_SIZE=1");
 
-    log_info("IOT-DSA c-sdk version: %s\n", IOT_DSA_C_SDK_VERSION);
-    log_info("IOT-DSA c-sdk git commit: %s\n", IOT_DSA_C_SDK_GIT_COMMIT_HASH);
+    log_info("CHINBOX C-EBS version: %s\n", IOT_DSA_C_SDK_VERSION);
+    log_info("CHINBOX C-SDK git commit: %s\n", IOT_DSA_C_SDK_GIT_COMMIT_HASH);
 
     int ret = 0;
     json_t *config = broker_config_get();

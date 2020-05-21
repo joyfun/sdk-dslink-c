@@ -15,3 +15,4 @@ nodes.json
 work/
 *.kdev4
 .kdev4/
+admin/

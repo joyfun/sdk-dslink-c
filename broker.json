@@ -1,0 +1,22 @@
+{
+  "http": {
+    "enabled": true,
+    "host": "0.0.0.0",
+    "port": 8100
+  },
+  "https": {
+    "enabled": true,
+    "host": "0.0.0.0",
+    "port": 8463,
+    "certName": "server.pem",
+    "certKeyName": "key.pem"
+  },
+  "log_level": "info",
+  "allowAllLinks": true,
+  "maxQueue": 1024,
+  "maxSendQueue": 8,
+  "defaultPermission": null,
+  "storage": {
+    "path": "/home/joyfun/beebeats/workspace/sdk-dslink-c"
+  }
+}

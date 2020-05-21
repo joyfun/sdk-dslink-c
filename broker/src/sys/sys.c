@@ -51,7 +51,7 @@ int init_sys_static(BrokerNode *sysNode) {
     }
 
     if (json_object_set_new_nocheck(versionNode->meta, "$name",
-                            json_string_nocheck("DSA Version")) != 0) {
+                            json_string_nocheck("EBS Version")) != 0) {
         return 1;
     }
 

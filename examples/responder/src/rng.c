@@ -34,10 +34,10 @@ void responder_rng_subbed(DSLink *link, DSNode *node) {
     a[0] = link;
     a[1] = node;
 
-    uv_timer_t *timer = malloc(sizeof(uv_timer_t));
-    uv_timer_init(&link->loop, timer);
-    timer->data = a;
-    uv_timer_start(timer, gen_number, 0, 500);
+    uv_timer_t *timer = malloc(sizeof(uv_timer_t));   //创建定时器
+    uv_timer_init(&link->loop, timer);                //初始化定时器，并绑定到循环任务
+    timer->data = a;                                  //附加数据
+    uv_timer_start(timer, gen_number, 0, 500);        //设置回调函数，并启动定时任务
 }
 
 static
