@@ -183,7 +183,22 @@ void handle_about(Broker *broker, HttpRequest *req, Socket *sock) {
 }
 static
 void handle_api(Broker *broker, HttpRequest *req, Socket *sock) {
-     log_info("handle about %s \n",req->uri.resource);
+ json_error_t err;
+    json_t *body;
+    {
+        const char *start = strchr(req->body, '{');
+        const char *end = strrchr(req->body, '}');
+        if (!(start && end)) {
+            return;
+        }
+        body = json_loadb(start, end - start + 1, 0, &err);
+        if (!body) {
+            broker_send_internal_error(sock);
+            return;
+        }
+    }
+
+     log_info("get payload %s abc\n",json_string_value(json_object_get(body, "action")));
      json_t *resp= json_object();
      json_object_set_new_nocheck(resp, "version", json_string_nocheck("20200530"));
      json_object_set_new_nocheck(resp, "copyRight", json_string_nocheck("GinLink"));
@@ -196,6 +211,7 @@ void handle_api(Broker *broker, HttpRequest *req, Socket *sock) {
                        CONN_RESP, (int) strlen(data), data);
     buf[len] = '\0';
     dslink_free(data);
+    log_info("resp:%s \n", buf);
     dslink_socket_write(sock, buf, (size_t) len);  
 
 }
@@ -463,10 +479,12 @@ void broker_on_data_callback(Client *client, void *data) {
         handle_about(broker, &req, client->sock);
         goto exit;
         }else if(is_start_with(req.uri.resource, "/api") == 0){
-                  if (strcmp(req.method, "POST") != 0) {
+                  if (strcmp(req.method, "POST") == 0) {
+                      handle_api(broker, &req, client->sock);
+                  } else{
                       broker_send_bad_request(client->sock);
-                  }  
-        handle_api(broker, &req, client->sock);
+                  } 
+        return;
         }
         if (strcmp(req.uri.resource, "/conn") == 0) {
             if (strcmp(req.method, "POST") != 0) {
