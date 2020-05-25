@@ -50,8 +50,11 @@ struct Extension
     struct ExtensionCallbacks callbacks;
 };
 
-static
-void handle_admin(Broker *broker, HttpRequest *req, Socket *sock) {
+static void handle_post(Broker *broker, HttpRequest *req, Socket *sock) {
+    
+
+}
+static void handle_admin(Broker *broker, HttpRequest *req, Socket *sock) {
 
     char current_dir[FILENAME_MAX];
     GetCurrentDir(current_dir, FILENAME_MAX);
@@ -160,6 +163,42 @@ exit:
     return;
 
 }
+static
+void handle_about(Broker *broker, HttpRequest *req, Socket *sock) {
+     log_info("handle about %s \n",req->uri.resource);
+     json_t *resp= json_object();
+     json_object_set_new_nocheck(resp, "version", json_string_nocheck("20200530"));
+     json_object_set_new_nocheck(resp, "copyRight", json_string_nocheck("GinLink"));
+     json_object_set_new_nocheck(resp, "pods", json_string_nocheck("modbus,bacnet"));
+     json_object_set_new_nocheck(resp, "license", json_string_nocheck("XXXXXXXXXX"));
+        char *data = json_dumps(resp, JSON_INDENT(2));
+        json_decref(resp);
+      char buf[1024];
+    int len = snprintf(buf, sizeof(buf) - 1,
+                       CONN_RESP, (int) strlen(data), data);
+    buf[len] = '\0';
+    dslink_free(data);
+    dslink_socket_write(sock, buf, (size_t) len);  
+
+}
+static
+void handle_api(Broker *broker, HttpRequest *req, Socket *sock) {
+     log_info("handle about %s \n",req->uri.resource);
+     json_t *resp= json_object();
+     json_object_set_new_nocheck(resp, "version", json_string_nocheck("20200530"));
+     json_object_set_new_nocheck(resp, "copyRight", json_string_nocheck("GinLink"));
+     json_object_set_new_nocheck(resp, "pods", json_string_nocheck("modbus,bacnet"));
+     json_object_set_new_nocheck(resp, "license", json_string_nocheck("XXXXXXXXXX"));
+        char *data = json_dumps(resp, JSON_INDENT(2));
+        json_decref(resp);
+      char buf[1024];
+    int len = snprintf(buf, sizeof(buf) - 1,
+                       CONN_RESP, (int) strlen(data), data);
+    buf[len] = '\0';
+    dslink_free(data);
+    dslink_socket_write(sock, buf, (size_t) len);  
+
+}
 
 static
 void handle_conn(Broker *broker, HttpRequest *req, Socket *sock) {
@@ -250,7 +289,6 @@ fail:
 }
 
 void broker_https_on_data_callback(Client *client, void *data) {
-
     Broker *broker = data;
     RemoteDSLink *link = client->sock_data;
     if (link) {
@@ -282,8 +320,6 @@ void broker_https_on_data_callback(Client *client, void *data) {
         if (err) {
             goto exit;
         }
-
-
         //only java dslinks sends the body as a separate SSL record
         read = dslink_socket_read(client->sock, bodyBuf, sizeof(bodyBuf) - 1);
         if(read > 0) {
@@ -292,7 +328,6 @@ void broker_https_on_data_callback(Client *client, void *data) {
         }
 
     }
-
     if (strcmp(req.uri.resource, "/conn") == 0) {
         if (strcmp(req.method, "POST") != 0) {
             log_info("invalid method on /conn \n");
@@ -316,7 +351,6 @@ void broker_https_on_data_callback(Client *client, void *data) {
 //            broker_send_bad_request(client->sock);
 //            goto exit;
 //        }
-
         handle_admin(broker, &req, client->sock);
         log_info("deal admin path end \n");
 
@@ -416,16 +450,33 @@ void broker_on_data_callback(Client *client, void *data) {
         }
 
     }
-
-    if (strcmp(req.uri.resource, "/conn") == 0) {
+        //char *reqPath=;
+        log_info("handle request %s \n",req.uri.resource);
+        if (strcmp(req.uri.resource, "/login") == 0) {
         if (strcmp(req.method, "POST") != 0) {
+            log_info("invalid method on /conn \n");
+            //TODO impliment login method
+            broker_send_bad_request(client->sock);
+            goto exit;
+        }
+        }else if(strcmp(req.uri.resource, "/about") == 0){
+        handle_about(broker, &req, client->sock);
+        goto exit;
+        }else if(is_start_with(req.uri.resource, "/api") == 0){
+                  if (strcmp(req.method, "POST") != 0) {
+                      broker_send_bad_request(client->sock);
+                  }  
+        handle_api(broker, &req, client->sock);
+        }
+        if (strcmp(req.uri.resource, "/conn") == 0) {
+            if (strcmp(req.method, "POST") != 0) {
             log_info("invalid method on /conn \n");
             broker_send_bad_request(client->sock);
             goto exit;
         }
 
         handle_conn(broker, &req, client->sock);
-    } else if (strcmp(req.uri.resource, "/ws") == 0) {
+        } else if (strcmp(req.uri.resource, "/ws") == 0) {
         if (strcmp(req.method, "GET") != 0) {
             log_info("invalid method on /ws \n");
             broker_send_bad_request(client->sock);
@@ -443,7 +494,11 @@ void broker_on_data_callback(Client *client, void *data) {
        // mbedtls_net_set_nonblock(ctx);
 
         handle_admin(broker, &req, client->sock);
-    } else {
+    } else if(strcmp(req.method, "POST") == 0){
+        handle_post(broker, &req, client->sock);
+
+
+    }else {
         broker_send_not_found_error(client->sock);
     }
 

@@ -53,13 +53,10 @@ const char* mime_get_type(const char* url)
 
     index = 0;
     if (url == NULL) return mime_tables[0].type;
-               printf("total size:%d  __%d",sizeof(mime_tables),sizeof(mime_tables[0]));
-           //    printf("total size:%d",sizeof(mime_get_type[0]));
     int mimeLen;
     GET_ARRAY_LEN(mime_tables,mimeLen);
     while (mime_tables[index].name != NULL&&index<mimeLen)
     {
-               printf("file-ext %s  index:%d",mime_tables[index].type,index);
         if (is_end_with(url, mime_tables[index].name)==0)
             return mime_tables[index].type;
         index ++;
