@@ -228,24 +228,29 @@ set(CMAKE_MACOSX_RPATH 1)
 if(NOT APPLE AND UNIX)
     set(DSLINK_PLATFORM_LIBS dl)
 endif()
+    
+    set(LIB_EXT so)
+if(APPLE)
+    set(LIB_EXT dylib)
+endif()
 add_library( libmosquitto
              SHARED
              IMPORTED)
 set_target_properties( libmosquitto
                        PROPERTIES IMPORTED_LOCATION
-                       ${CMAKE_CURRENT_LIST_DIR}/libs/libmosquitto.dylib)
+                       ${CMAKE_CURRENT_LIST_DIR}/libs/libmosquitto.${LIB_EXT})
 add_library( libmodbus
              SHARED
              IMPORTED)
 set_target_properties( libmodbus
                        PROPERTIES IMPORTED_LOCATION
-                       ${CMAKE_CURRENT_LIST_DIR}/libs/libmodbus.dylib)
+                       ${CMAKE_CURRENT_LIST_DIR}/libs/libmodbus.${LIB_EXT})
 add_library( libbacnet-stack
              SHARED
              IMPORTED)
 set_target_properties( libbacnet-stack
                        PROPERTIES IMPORTED_LOCATION
-                       ${CMAKE_CURRENT_LIST_DIR}/libs/libbacnet-stack.dylib)
+                       ${CMAKE_CURRENT_LIST_DIR}/libs/libbacnet-stack.${LIB_EXT})
 if (DSLINK_BUILD_STATIC OR DSLINK_BUILD_EXAMPLES)
     add_library(sdk_dslink_c-static STATIC ${LIBRARY_SRC})
     target_link_libraries(sdk_dslink_c-static jansson libuv libmosquitto libmodbus libbacnet-stack ${DSLINK_PLATFORM_LIBS})
