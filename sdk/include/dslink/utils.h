@@ -28,7 +28,8 @@ int dslink_sleep(long ms);
 const char* dslink_checkIpv4Address(const char* address);
 const char* dslink_checkIpv6Address(const char* address);
 int dslink_isipv6address(const char* host);
-
+int is_start_with(const char *str, char *start);
+int is_end_with(const char *str, char *end);
 #ifdef __cplusplus
 }
 #endif

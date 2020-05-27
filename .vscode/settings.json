@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "ostream": "cpp",
-        "memory_resource": "c"
+        "memory_resource": "c",
+        "regex": "cpp",
+        "sstream": "cpp"
     }
 }

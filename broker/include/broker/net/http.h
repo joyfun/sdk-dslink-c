@@ -27,8 +27,9 @@ const char *broker_http_param_get(const HttpUri *uri, const char *name);
 
 void broker_send_bad_request(Socket *sock);
 void broker_send_internal_error(Socket *sock);
-void broker_send_not_found_error(Socket *sock);
-
+void broker_send_not_found_error(Socket *sock); 
+const char* mime_get_type(const char* url);
+void handle_static(HttpRequest *req, Socket *sock );
 #ifdef __cplusplus
 }
 #endif

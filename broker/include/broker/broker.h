@@ -58,7 +58,6 @@ void broker_on_data_callback(Client *client, void *data);
 
 void broker_https_on_data_callback(Client *client, void *data);
 
-const char* mime_get_type(const char* url);
 
 #ifdef __cplusplus
 }

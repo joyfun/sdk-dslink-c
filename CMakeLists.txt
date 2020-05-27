@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
 project(sdk_dslink_c C)
+#SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+#SET(BUILD_SHARED_LIBS OFF)
+#SET(CMAKE_EXE_LINKER_FLAGS "-static")
 
 option(USE_CCACHE "Enable CCache Support" ON)
 option(DSLINK_BUILD_BROKER "Whether to build the broker" ON)
@@ -230,23 +233,29 @@ add_library( libmosquitto
              IMPORTED)
 set_target_properties( libmosquitto
                        PROPERTIES IMPORTED_LOCATION
-                       ${CMAKE_CURRENT_LIST_DIR}/libmosquitto.dylib)
+                       ${CMAKE_CURRENT_LIST_DIR}/libs/libmosquitto.dylib)
 add_library( libmodbus
              SHARED
              IMPORTED)
 set_target_properties( libmodbus
                        PROPERTIES IMPORTED_LOCATION
-                       ${CMAKE_CURRENT_LIST_DIR}/libmodbus.dylib)
+                       ${CMAKE_CURRENT_LIST_DIR}/libs/libmodbus.dylib)
+add_library( libbacnet-stack
+             SHARED
+             IMPORTED)
+set_target_properties( libbacnet-stack
+                       PROPERTIES IMPORTED_LOCATION
+                       ${CMAKE_CURRENT_LIST_DIR}/libs/libbacnet-stack.dylib)
 if (DSLINK_BUILD_STATIC OR DSLINK_BUILD_EXAMPLES)
     add_library(sdk_dslink_c-static STATIC ${LIBRARY_SRC})
-    target_link_libraries(sdk_dslink_c-static jansson libuv libmosquitto libmodbus ${DSLINK_PLATFORM_LIBS})
+    target_link_libraries(sdk_dslink_c-static jansson libuv libmosquitto libmodbus libbacnet-stack ${DSLINK_PLATFORM_LIBS})
     set(DSLINK_INSTALL_TARGETS sdk_dslink_c sdk_dslink_c-static)
 else()
     set(DSLINK_INSTALL_TARGETS sdk_dslink_c)
 endif()
 
 add_library(sdk_dslink_c SHARED ${LIBRARY_SRC})
-target_link_libraries(sdk_dslink_c jansson libuv libmosquitto libmodbus ${DSLINK_PLATFORM_LIBS})
+target_link_libraries(sdk_dslink_c jansson libuv libmosquitto libmodbus libbacnet-stack ${DSLINK_PLATFORM_LIBS})
 set_target_properties(sdk_dslink_c PROPERTIES VERSION ${VERSION} SOVERSION ${VERSION} )
 
 
@@ -284,7 +293,6 @@ if (DSLINK_BUILD_BROKER)
     target_link_libraries(sdk_broker_c sdk_dslink_c)
     target_include_directories(sdk_broker_c PUBLIC "broker/include")
     set_target_properties(sdk_broker_c PROPERTIES VERSION ${VERSION} SOVERSION ${VERSION_MAJOR} )
-
     add_executable(broker "${BROKER_SRC_DIR}/main.c")
     target_link_libraries(broker sdk_broker_c)
 

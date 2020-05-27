@@ -130,4 +130,61 @@ const char* setHostFrom(const char* protocol,const char* address, const char* po
     return host;
 }
 
+/**
+ *判断是字符串str是不是以start开始
+ */
+int is_start_with(const char *str, char *start)
+{
+	if (NULL == str || NULL == start)
+	{
+		return -1;
+	}
+	int str_len = strlen(str);
+	int start_len = strlen(start);
+	if (str_len < start_len || str_len == 0 || start_len == 0)
+	{
+		return -1;
+	}
+	char *p = start;
+	int i = 0;
+	while(*p != '\0')
+	{
+		if (str[i] != *p)
+		{
+			return -1;
+		}
+		++p;
+		++i;
+	}
+	return 0;
+}
+ 
+/**
+ *判断是字符串str是不是以end结束
+ */
+int is_end_with(const char *str, char *end)
+{
+	if (NULL == str || NULL == end)
+	{
+		return -1;
+	}
+	int str_len = strlen(str);
+	int end_len = strlen(end);
+	if (str_len < end_len || str_len == 0 || end_len == 0)
+	{
+		return -1;
+	}	
+	while (end_len > 0)
+	{
+		if (str[str_len - 1] != end[end_len - 1])
+		{
+			return -1;
+		}
+		--str_len;
+		--end_len;
+	}
+	return 0;
+}
+
+
 

@@ -11,7 +11,6 @@
  */
 
 #include <string.h>
-#include "util.h"
 #define GET_ARRAY_LEN(array,len){len = (sizeof(array) / sizeof(array[0]));}
 
 
