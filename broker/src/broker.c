@@ -2,6 +2,7 @@
 #include <dlfcn.h>
 #include <libgen.h>
 #include <string.h>
+#include <dslink/auth.h>
 //#define WINDOWS  /* uncomment this line to use it for windows.*/
 #ifdef WINDOWS
 #include <direct.h>
@@ -181,6 +182,31 @@ void handle_about(Broker *broker, HttpRequest *req, Socket *sock) {
     dslink_socket_write(sock, buf, (size_t) len);  
 
 }
+static
+void handle_login(Broker *broker, HttpRequest *req, Socket *sock) {
+     //log_info("handle about %s \n",req->uri.resource);
+     log_info("Elapsed time:%u secs./n",clock()/CLOCKS_PER_SEC);
+
+     json_t *resp= json_object();
+     AccessToken ac={"","","",3};
+     json_object_set_new_nocheck(resp, "access_token", json_string_nocheck("20200530"));
+     json_object_set_new_nocheck(resp, "token_type", json_string_nocheck("bearer"));
+     json_object_set_new_nocheck(resp, "refresh_token", json_string_nocheck("modbus,bacnet"));
+     json_object_set_new_nocheck(resp, "expires_in", json_integer(86399));
+     json_object_set_new_nocheck(resp, "scope", json_string_nocheck("all"));
+
+        char *data = json_dumps(resp, JSON_INDENT(2));
+        json_decref(resp);
+      char buf[1024];
+    int len = snprintf(buf, sizeof(buf) - 1,
+                       CONN_RESP, (int) strlen(data), data);
+    buf[len] = '\0';
+    dslink_free(data);
+    dslink_socket_write(sock, buf, (size_t) len);  
+
+}
+
+
 static
 void handle_api(Broker *broker, HttpRequest *req, Socket *sock) {
  json_error_t err;
@@ -474,6 +500,9 @@ void broker_on_data_callback(Client *client, void *data) {
             //TODO impliment login method
             broker_send_bad_request(client->sock);
             goto exit;
+        }else{
+            handle_login(broker, &req, client->sock);
+
         }
         }else if(strcmp(req.uri.resource, "/about") == 0){
         handle_about(broker, &req, client->sock);

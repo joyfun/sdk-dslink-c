@@ -16,6 +16,7 @@
   "maxQueue": 1024,
   "maxSendQueue": 8,
   "defaultPermission": null,
+  "extension_library": "libmosquitto.dylib",
   "storage": {
     "path": "/home/joyfun/beebeats/workspace/sdk-dslink-c"
   }

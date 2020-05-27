@@ -183,6 +183,8 @@ set(BROKER_SRC
     "${BROKER_SRC_DIR}/msg/msg_set.c"
     "${BROKER_SRC_DIR}/msg/msg_subscribe.c"
     "${BROKER_SRC_DIR}/msg/msg_unsubscribe.c"
+    "${BROKER_SRC_DIR}/mqtt/mqttclient.c"
+    "${BROKER_SRC_DIR}/modbus/modbusclient.c"
 
     "${BROKER_SRC_DIR}/net/http.c"
     "${BROKER_SRC_DIR}/net/server.c"
@@ -223,18 +225,30 @@ set(CMAKE_MACOSX_RPATH 1)
 if(NOT APPLE AND UNIX)
     set(DSLINK_PLATFORM_LIBS dl)
 endif()
-
+add_library( libmosquitto
+             SHARED
+             IMPORTED)
+set_target_properties( libmosquitto
+                       PROPERTIES IMPORTED_LOCATION
+                       ${CMAKE_CURRENT_LIST_DIR}/libmosquitto.dylib)
+add_library( libmodbus
+             SHARED
+             IMPORTED)
+set_target_properties( libmodbus
+                       PROPERTIES IMPORTED_LOCATION
+                       ${CMAKE_CURRENT_LIST_DIR}/libmodbus.dylib)
 if (DSLINK_BUILD_STATIC OR DSLINK_BUILD_EXAMPLES)
     add_library(sdk_dslink_c-static STATIC ${LIBRARY_SRC})
-    target_link_libraries(sdk_dslink_c-static jansson libuv ${DSLINK_PLATFORM_LIBS})
+    target_link_libraries(sdk_dslink_c-static jansson libuv libmosquitto libmodbus ${DSLINK_PLATFORM_LIBS})
     set(DSLINK_INSTALL_TARGETS sdk_dslink_c sdk_dslink_c-static)
 else()
     set(DSLINK_INSTALL_TARGETS sdk_dslink_c)
 endif()
 
 add_library(sdk_dslink_c SHARED ${LIBRARY_SRC})
-target_link_libraries(sdk_dslink_c jansson libuv ${DSLINK_PLATFORM_LIBS})
+target_link_libraries(sdk_dslink_c jansson libuv libmosquitto libmodbus ${DSLINK_PLATFORM_LIBS})
 set_target_properties(sdk_dslink_c PROPERTIES VERSION ${VERSION} SOVERSION ${VERSION} )
+
 
 set(DSLINK_INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
 set(DSLINK_INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")

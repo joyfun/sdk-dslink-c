@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -e
+export OPENSSL_ROOT_DIR=/usr/local/Cellar/openssl@1.1/1.1.1f
 
 DEFAULT_ARGS="-DDSLINK_BUILD_EXAMPLES=ON -DDSLINK_BUILD_BROKER=ON -DCMAKE_BUILD_TYPE=Release"
 
