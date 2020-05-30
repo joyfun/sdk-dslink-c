@@ -1,13 +1,5 @@
 /*
  * File      : mimetype.c
- * This file is part of RT-Thread RTOS/WebNet Server
- * COPYRIGHT (C) 2011, Shanghai Real-Thread Technology Co., Ltd
- *
- * All rights reserved.
- *
- * Change Logs:
- * Date           Author       Notes
- * 2011-08-02     Bernard      the first version
  */
 
 #include <string.h>

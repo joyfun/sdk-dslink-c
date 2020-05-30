@@ -20,6 +20,9 @@
 #include "broker/data/data.h"
 #include "broker/sys/sys.h"
 
+#include <broker/mosquitto.h>
+#include <broker/southclient.h>
+
 #define LOG_TAG "broker"
 #include <dslink/log.h>
 #include <dslink/utils.h>
@@ -752,7 +755,13 @@ int broker_start() {
     mainLoop->data = &broker;
 
     json_t *defaultPermission = json_object_get(config, "defaultPermission");
-
+    json_t *mqttconfig = json_object_get(config, "mqtt");
+    struct mosquitto  *mosq;
+    int rc=mqtt_connection(mosq,json_string_value(json_object_get(mqttconfig,"host")),json_integer_value(json_object_get(mqttconfig,"port")),json_string_value(json_object_get(mqttconfig,"user")),json_string_value(json_object_get(mqttconfig,"password")),json_string_value(json_object_get(mqttconfig,"clientID")),60);
+    log_info("mqtt connect result:%d",rc);
+    //mosquitto_subscribe(mosq, NULL, "/v1/devices/Xinhai/topo/updateResponse", 1);
+    // mosquitto_subscribe(mosq,NULL,"/v1/devices/Xinhai/topo/addResponse",1);
+    log_info("mqtt subscribe success");
     broker_config_load(config);
 
     broker.storage = dslink_storage_init(config);
@@ -764,10 +773,12 @@ int broker_start() {
     }
 
     broker_init_extensions(&broker, config);
-
+    mosquitto_lib_init();
     ret = broker_start_server(config);
+
 exit:
     broker_free(&broker);
     dslink_free(mainLoop);
+    mosquitto_lib_cleanup();
     return ret;
 }

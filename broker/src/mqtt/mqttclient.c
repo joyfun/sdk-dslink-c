@@ -4,9 +4,9 @@
 #include <stdlib.h>
 
 /* defines */
-#define BROKER		"localhost"
-#define PORT		1883
-#define KEEPALIVE	500
+// #define BROKER		"localhost"
+// #define PORT		1883
+// #define KEEPALIVE	500
 
 /* prototypes */
 void message_callback(struct mosquitto * mosq, void * obj , const struct mosquitto_message * message);
@@ -18,16 +18,16 @@ void printError (int ec);
 /* @breif Main application entry point
  * @return On sucess 0, otherwsie 1.
  */
-int mmain (void)
+int mqtt_connection (struct mosquitto* m_pMqtt,char* host,int port,char* user,char* pass,char* clientId,int keepalive)
 {
-	struct mosquitto * m_pMqtt;
 	int rc;
 	
 	/* initialise the library */
-    mosquitto_lib_init();
+   // mosquitto_lib_init();
     
     /* Create a new handle to a mosquitto object */
-    m_pMqtt = mosquitto_new(NULL, true, NULL);
+    m_pMqtt = mosquitto_new(clientId, true, NULL);
+    
     if (m_pMqtt == NULL)
     {
     	fprintf(stderr, "Failed to allocate mosquitto instance\r\n");
@@ -41,7 +41,8 @@ int mmain (void)
     mosquitto_message_callback_set(m_pMqtt, message_callback);
 
     /* connect to the broker */
-    rc = mosquitto_connect(m_pMqtt, BROKER, PORT, KEEPALIVE); 
+    mosquitto_username_pw_set(m_pMqtt,user,pass);
+    rc = mosquitto_connect(m_pMqtt, host, port, keepalive); 
     if (rc != MOSQ_ERR_SUCCESS)
     {
 		printError(rc);
@@ -58,59 +59,61 @@ int mmain (void)
     	exit(1);
     }
  
- 	/* At this point we are connected to the broker and the network
- 	 * thread is running so we can subscribe and publish as we please.
- 	 * Any additional processing can be done using the callbacks we stup earlier
- 	 */
+ 	// /* At this point we are connected to the broker and the network
+ 	//  * thread is running so we can subscribe and publish as we please.
+ 	//  * Any additional processing can be done using the callbacks we stup earlier
+ 	//  */
  
     sleep(1);
     
-    /* subscribe to a topic */
-    rc = mosquitto_subscribe(m_pMqtt, NULL, "testtopic", 0);
-    if (rc != MOSQ_ERR_SUCCESS)
-    {
-		printError(rc);
-    	cleanUp(m_pMqtt);
-    	exit(1);
-    }
-    
-    sleep(1);
+    // /* subscribe to a topic */
+    rc = mosquitto_subscribe(m_pMqtt, NULL, "/v1/devices/Xinhai/topo/updateResponse", 1);
+    rc = mosquitto_subscribe(m_pMqtt, NULL, "/v1/devices/Xinhai/topo/addResponse", 1);
 
-	/* publish a message */    
-    rc = mosquitto_publish(m_pMqtt, NULL, "testtopic", 6, "hello", 0, false);
     if (rc != MOSQ_ERR_SUCCESS)
     {
 		printError(rc);
     	cleanUp(m_pMqtt);
     	exit(1);
     }
+    
+    // sleep(1);
 
-    sleep(1);
+	// /* publish a message */    
+    // rc = mosquitto_publish(m_pMqtt, NULL, "testtopic", 6, "hello", 0, false);
+    // if (rc != MOSQ_ERR_SUCCESS)
+    // {
+	// 	printError(rc);
+    // 	cleanUp(m_pMqtt);
+    // 	exit(1);
+    // }
+
+    // sleep(1);
     
-    /* publish another message */
-    rc = mosquitto_publish(m_pMqtt, NULL, "testtopic", 6, "12345", 0, false);
-    if (rc != MOSQ_ERR_SUCCESS)
-    {
-		printError(rc);
-    	cleanUp(m_pMqtt);
-    	exit(1);
-    }
+    // /* publish another message */
+    // rc = mosquitto_publish(m_pMqtt, NULL, "testtopic", 6, "12345", 0, false);
+    // if (rc != MOSQ_ERR_SUCCESS)
+    // {
+	// 	printError(rc);
+    // 	cleanUp(m_pMqtt);
+    // 	exit(1);
+    // }
     
-    sleep(1);
+    // sleep(1);
     
-	/* terminate the thread */
-    rc = mosquitto_loop_stop(m_pMqtt, true);
-    if (rc != MOSQ_ERR_SUCCESS)
-    {
-		printError(rc);
-    	cleanUp(m_pMqtt);
-    	exit(1);
-    }
+	// /* terminate the thread */
+    // rc = mosquitto_loop_stop(m_pMqtt, true);
+    // if (rc != MOSQ_ERR_SUCCESS)
+    // {
+	// 	printError(rc);
+    // 	cleanUp(m_pMqtt);
+    // 	exit(1);
+    // }
      
     /* clean up resources before exiting */
-    cleanUp(m_pMqtt);
+    //cleanUp(m_pMqtt);
 
-	return 0;
+	return rc;
 }
 
 /* @breif Received message callback 

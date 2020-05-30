@@ -22,6 +22,12 @@ typedef struct RemoteAuth {
     char salt[48];
     mbedtls_ecdh_context tempKey;
     const char *pubKey;
+    int type ;//type:1 mqtt ,2 bacnet,3 modbus
+    char *host;
+    int port;
+    char *user;
+    char *passoword;
+    char extra;
 
 } RemoteAuth;
 

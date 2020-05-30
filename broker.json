@@ -19,5 +19,14 @@
   "extension_library": "libmosquitto.dylib",
   "storage": {
     "path": "/home/joyfun/beebeats/workspace/sdk-dslink-c"
-  }
+  },
+  "mqtt" : {
+    "host" : "59.36.10.225",
+    "port" : 1883,
+    "clientID" : "D4175mxcMM",
+    "user" : "8E2429AAC347409082A8C1514E4F15B1",
+    "password" : "123456@Xinhai",
+    "flag" : "Xinhai"
+}
+  
 }
