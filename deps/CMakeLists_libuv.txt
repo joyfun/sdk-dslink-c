@@ -1,0 +1,213 @@
+set(LIBUV_DIR "${CMAKE_CURRENT_LIST_DIR}/libuv")
+set(LIBUV_SRC_DIR "${LIBUV_DIR}/src")
+include_directories("${LIBUV_DIR}/include" "${LIBUV_SRC_DIR}")
+cmake_minimum_required(VERSION 3.4)
+project(libuv LANGUAGES C)
+
+
+
+set(uv_sources
+    ${LIBUV_DIR}/src/fs-poll.c
+    ${LIBUV_DIR}/src/idna.c
+    ${LIBUV_DIR}/src/inet.c
+    ${LIBUV_DIR}/src/random.c
+    ${LIBUV_DIR}/src/strscpy.c
+    ${LIBUV_DIR}/src/threadpool.c
+    ${LIBUV_DIR}/src/timer.c
+    ${LIBUV_DIR}/src/uv-common.c
+    ${LIBUV_DIR}/src/uv-data-getter-setters.c
+    ${LIBUV_DIR}/src/version.c)
+
+if(WIN32)
+  list(APPEND uv_defines WIN32_LEAN_AND_MEAN _WIN32_WINNT=0x0600)
+  list(APPEND uv_libraries
+       psapi
+       iphlpapi
+       userenv
+       ws2_32)
+  list(APPEND uv_sources
+       ${LIBUV_DIR}/src/win/async.c
+       ${LIBUV_DIR}/src/win/core.c
+       ${LIBUV_DIR}/src/win/detect-wakeup.c
+       ${LIBUV_DIR}/src/win/dl.c
+       ${LIBUV_DIR}/src/win/error.c
+       ${LIBUV_DIR}/src/win/fs.c
+       ${LIBUV_DIR}/src/win/fs-event.c
+       ${LIBUV_DIR}/src/win/getaddrinfo.c
+       ${LIBUV_DIR}/src/win/getnameinfo.c
+       ${LIBUV_DIR}/src/win/handle.c
+       ${LIBUV_DIR}/src/win/loop-watcher.c
+       ${LIBUV_DIR}/src/win/pipe.c
+       ${LIBUV_DIR}/src/win/thread.c
+       ${LIBUV_DIR}/src/win/poll.c
+       ${LIBUV_DIR}/src/win/process.c
+       ${LIBUV_DIR}/src/win/process-stdio.c
+       ${LIBUV_DIR}/src/win/signal.c
+       ${LIBUV_DIR}/src/win/snprintf.c
+       ${LIBUV_DIR}/src/win/stream.c
+       ${LIBUV_DIR}/src/win/tcp.c
+       ${LIBUV_DIR}/src/win/tty.c
+       ${LIBUV_DIR}/src/win/udp.c
+       ${LIBUV_DIR}/src/win/util.c
+       ${LIBUV_DIR}/src/win/winapi.c
+       ${LIBUV_DIR}/src/win/winsock.c)
+  list(APPEND uv_test_libraries ws2_32)
+  list(APPEND uv_test_sources ${LIBUV_DIR}/src/win/snprintf.c ${LIBUV_DIR}/test/runner-win.c)
+else()
+  list(APPEND uv_defines _FILE_OFFSET_BITS=64 _LARGEFILE_SOURCE)
+  if(NOT CMAKE_SYSTEM_NAME MATCHES "Android|OS390")
+    # TODO: This should be replaced with find_package(Threads) if possible
+    # Android has pthread as part of its c library, not as a separate
+    # libpthread.so.
+    list(APPEND uv_libraries pthread)
+  endif()
+  list(APPEND uv_sources
+       ${LIBUV_DIR}/src/unix/async.c
+       ${LIBUV_DIR}/src/unix/core.c
+       ${LIBUV_DIR}/src/unix/dl.c
+       ${LIBUV_DIR}/src/unix/fs.c
+       ${LIBUV_DIR}/src/unix/getaddrinfo.c
+       ${LIBUV_DIR}/src/unix/getnameinfo.c
+       ${LIBUV_DIR}/src/unix/loop-watcher.c
+       ${LIBUV_DIR}/src/unix/loop.c
+       ${LIBUV_DIR}/src/unix/pipe.c
+       ${LIBUV_DIR}/src/unix/poll.c
+       ${LIBUV_DIR}/src/unix/process.c
+       ${LIBUV_DIR}/src/unix/random-devurandom.c
+       ${LIBUV_DIR}/src/unix/signal.c
+       ${LIBUV_DIR}/src/unix/stream.c
+       ${LIBUV_DIR}/src/unix/tcp.c
+       ${LIBUV_DIR}/src/unix/thread.c
+       ${LIBUV_DIR}/src/unix/tty.c
+       ${LIBUV_DIR}/src/unix/udp.c)
+  list(APPEND uv_test_sources ${LIBUV_DIR}/test/runner-unix.c)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "AIX")
+  list(APPEND uv_defines
+       _ALL_SOURCE
+       _LINUX_SOURCE_COMPAT
+       _THREAD_SAFE
+       _XOPEN_SOURCE=500
+       HAVE_SYS_AHAFS_EVPRODS_H)
+  list(APPEND uv_libraries perfstat)
+  list(APPEND uv_sources
+       ${LIBUV_DIR}/src/unix/aix.c
+       ${LIBUV_DIR}/src/unix/aix-common.c)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+  list(APPEND uv_libraries dl)
+  list(APPEND uv_sources
+       ${LIBUV_DIR}/src/unix/android-ifaddrs.c
+       ${LIBUV_DIR}/src/unix/linux-core.c
+       ${LIBUV_DIR}/src/unix/linux-inotify.c
+       ${LIBUV_DIR}/src/unix/linux-syscalls.c
+       ${LIBUV_DIR}/src/unix/procfs-exepath.c
+       ${LIBUV_DIR}/src/unix/pthread-fixes.c
+       ${LIBUV_DIR}/src/unix/random-getentropy.c
+       ${LIBUV_DIR}/src/unix/random-getrandom.c
+       ${LIBUV_DIR}/src/unix/random-sysctl-linux.c
+       ${LIBUV_DIR}/src/unix/sysinfo-loadavg.c)
+endif()
+
+if(APPLE OR CMAKE_SYSTEM_NAME MATCHES "Android|Linux|OS390")
+  list(APPEND uv_sources ${LIBUV_DIR}/src/unix/proctitle.c)
+endif()
+
+if(CMAKE_SYSTEM_NAME MATCHES "DragonFly|FreeBSD")
+  list(APPEND uv_sources ${LIBUV_DIR}/src/unix/freebsd.c)
+endif()
+
+if(CMAKE_SYSTEM_NAME MATCHES "DragonFly|FreeBSD|NetBSD|OpenBSD")
+  list(APPEND uv_sources ${LIBUV_DIR}/src/unix/posix-hrtime.c ${LIBUV_DIR}/src/unix/bsd-proctitle.c)
+  list(APPEND uv_libraries kvm)
+endif()
+
+if(APPLE OR CMAKE_SYSTEM_NAME MATCHES "DragonFly|FreeBSD|NetBSD|OpenBSD")
+  list(APPEND uv_sources ${LIBUV_DIR}/src/unix/bsd-ifaddrs.c ${LIBUV_DIR}/src/unix/kqueue.c)
+endif()
+
+if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+  list(APPEND uv_sources ${LIBUV_DIR}/src/unix/random-getrandom.c)
+endif()
+
+if(APPLE OR CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+  list(APPEND uv_sources ${LIBUV_DIR}/src/unix/random-getentropy.c)
+endif()
+
+if(APPLE)
+  list(APPEND uv_defines _DARWIN_UNLIMITED_SELECT=1 _DARWIN_USE_64_BIT_INODE=1)
+  list(APPEND uv_sources
+       ${LIBUV_DIR}/src/unix/darwin-proctitle.c
+       ${LIBUV_DIR}/src/unix/darwin.c
+       ${LIBUV_DIR}/src/unix/fsevents.c)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  list(APPEND uv_defines _GNU_SOURCE _POSIX_C_SOURCE=200112)
+  list(APPEND uv_libraries dl rt)
+  list(APPEND uv_sources
+       ${LIBUV_DIR}/src/unix/linux-core.c
+       ${LIBUV_DIR}/src/unix/linux-inotify.c
+       ${LIBUV_DIR}/src/unix/linux-syscalls.c
+       ${LIBUV_DIR}/src/unix/procfs-exepath.c
+       ${LIBUV_DIR}/src/unix/random-getrandom.c
+       ${LIBUV_DIR}/src/unix/random-sysctl-linux.c
+       ${LIBUV_DIR}/src/unix/sysinfo-loadavg.c)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
+  list(APPEND uv_sources ${LIBUV_DIR}/src/unix/netbsd.c)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+  list(APPEND uv_sources ${LIBUV_DIR}/src/unix/openbsd.c)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "OS390")
+  list(APPEND uv_defines PATH_MAX=255)
+  list(APPEND uv_defines _AE_BIMODAL)
+  list(APPEND uv_defines _ALL_SOURCE)
+  list(APPEND uv_defines _ISOC99_SOURCE)
+  list(APPEND uv_defines _LARGE_TIME_API)
+  list(APPEND uv_defines _OPEN_MSGQ_EXT)
+  list(APPEND uv_defines _OPEN_SYS_FILE_EXT)
+  list(APPEND uv_defines _OPEN_SYS_IF_EXT)
+  list(APPEND uv_defines _OPEN_SYS_SOCK_EXT3)
+  list(APPEND uv_defines _OPEN_SYS_SOCK_IPV6)
+  list(APPEND uv_defines _UNIX03_SOURCE)
+  list(APPEND uv_defines _UNIX03_THREADS)
+  list(APPEND uv_defines _UNIX03_WITHDRAWN)
+  list(APPEND uv_defines _XOPEN_SOURCE_EXTENDED)
+  list(APPEND uv_sources
+       ${LIBUV_DIR}/src/unix/pthread-fixes.c
+       ${LIBUV_DIR}/src/unix/os390.c
+       ${LIBUV_DIR}/src/unix/os390-syscalls.c)
+  list(APPEND uv_cflags -Wc,DLL -Wc,exportall -Wc,xplink)
+  list(APPEND uv_libraries -Wl,xplink)
+  list(APPEND uv_test_libraries -Wl,xplink)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "OS400")
+  list(APPEND uv_defines
+       _ALL_SOURCE
+       _LINUX_SOURCE_COMPAT
+       _THREAD_SAFE
+       _XOPEN_SOURCE=500)
+  list(APPEND uv_sources
+    ${LIBUV_DIR}/src/unix/aix-common.c
+    ${LIBUV_DIR}/src/unix/ibmi.c
+    ${LIBUV_DIR}/src/unix/no-fsevents.c
+    ${LIBUV_DIR}/src/unix/no-proctitle.c
+    ${LIBUV_DIR}/src/unix/posix-poll.c)
+endif()
+
+
+
+add_library(libuv STATIC ${uv_sources})
+target_compile_options(libuv PRIVATE "-fno-strict-aliasing" "-Wno-unused-parameter")
+target_compile_options(libuv PRIVATE "-Wno-implicit-function-declaration")
+export(TARGETS libuv
+       FILE "${PROJECT_BINARY_DIR}/libuv-targets.cmake")
+export(PACKAGE libuv)

@@ -86,6 +86,7 @@ IF(CMAKE_BUILD_TYPE STREQUAL "Release")
 ENDIF()
 
 ##### This are the libuv, mbed, jansson, wslay and argtable3 build files
+include("${CMAKE_CURRENT_LIST_DIR}/deps/CMakeLists_libuv.txt")
 include("${CMAKE_CURRENT_LIST_DIR}/deps/CMakeLists.txt")
 include("${CMAKE_CURRENT_LIST_DIR}/deps/CMakeLists_jansson.txt")
 include("${CMAKE_CURRENT_LIST_DIR}/deps/CMakeLists_wslay.txt")
@@ -95,13 +96,15 @@ include(ExternalProject)
 
 ##### Configure Flags #####
 
-ADD_C_FLAGS("-std=gnu99")
+ADD_C_FLAGS("-std=gnu99 -g")
 ADD_C_FLAGS("-Wno-tautological-compare")
 
 if (NOT NO_WARNINGS)
-    ADD_C_FLAGS("-Wall -Wextra -Werror")
-    ADD_C_FLAGS("-Wno-overlength-strings")
-    ADD_C_FLAGS("-pedantic")
+    #ADD_C_FLAGS("-Wall -Wextra -Werror")
+    #ADD_C_FLAGS("-Wno-overlength-strings")
+    #ADD_C_FLAGS("-pedantic")
+    ADD_C_FLAGS("-Wno-unused-command-line-argument")
+
 endif()
 
 if (${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
